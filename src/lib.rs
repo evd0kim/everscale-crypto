@@ -1,6 +1,7 @@
 extern crate core;
 
 pub mod ed25519;
+pub mod gost256;
 
 #[cfg(feature = "tl-proto")]
 pub mod tl {
@@ -10,6 +11,8 @@ pub mod tl {
     pub enum PublicKey<'tl> {
         #[tl(id = 0x4813b4c6, size_hint = 32)]
         Ed25519 { key: &'tl [u8; 32] },
+        #[tl(id = 0x4813b4c7, size_hint = 64)] // Fix id
+        Gost256 { key: &'tl [u8; 64] },
         #[tl(id = 0x34ba45cb)]
         Overlay { name: &'tl [u8] },
         #[tl(id = 0x2dbcadd4, size_hint = 32)]
@@ -22,6 +25,7 @@ pub mod tl {
         pub fn as_equivalent_owned(&self) -> PublicKeyOwned {
             match self {
                 &Self::Ed25519 { key } => PublicKeyOwned::Ed25519 { key: *key },
+                &Self::Gost256 { key } => PublicKeyOwned::Gost256 { key: *key },
                 Self::Overlay { name } => PublicKeyOwned::Overlay {
                     name: name.to_vec(),
                 },
@@ -39,6 +43,8 @@ pub mod tl {
     pub enum PublicKeyOwned {
         #[tl(id = 0x4813b4c6, size_hint = 32)]
         Ed25519 { key: [u8; 32] },
+        #[tl(id = 0x4813b4c7, size_hint = 64)]
+        Gost256 { key: [u8; 64] },
         #[tl(id = 0x34ba45cb)]
         Overlay { name: Vec<u8> },
         #[tl(id = 0x2dbcadd4, size_hint = 32)]
@@ -51,6 +57,7 @@ pub mod tl {
         pub fn as_equivalent_ref(&self) -> PublicKey<'_> {
             match self {
                 Self::Ed25519 { key } => PublicKey::Ed25519 { key },
+                Self::Gost256 { key } => PublicKey::Gost256 { key },
                 Self::Overlay { name } => PublicKey::Overlay {
                     name: name.as_slice(),
                 },
